@@ -5,6 +5,10 @@ ImHTML is a simple HTML renderer for ImGui. It is based on the awesome [litehtml
 > [!WARNING]
 > I quickly extracted this from a pet project of mine and decided to make it a library. Expect bugs and missing features.
 
+## Video
+
+https://github.com/user-attachments/assets/efc9b341-7f4a-4626-96b8-618c568385d0
+
 ## Features
 
 - Support a subset of HTML and CSS (see [litehtml](https://github.com/zenozeng/litehtml) and [litehtml - CSS Support](https://docs.google.com/spreadsheets/d/1CM6p2BU0XwM7KS0ZUIP7u25g2rrHXKx_ANGdDG98vwc/edit?gid=0#gid=0))
