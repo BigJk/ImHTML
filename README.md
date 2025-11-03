@@ -1,6 +1,6 @@
 # ImHTML
 
-ImHTML is a simple HTML renderer for ImGui. It is based on the [litehtml](https://github.com/zenozeng/litehtml) library. I extracted this from a pet project of mine and decided to make it a library. This can be used for context with complex layout like in-program documentation, tutorials, etc.
+ImHTML is a simple HTML renderer for ImGui. It is based on the awesome [litehtml](https://github.com/zenozeng/litehtml) library, which is responsible for understanding HTML and CSS. ImHTML implements the needed container to render the content to ImGui.
 
 > [!WARNING]
 > I quickly extracted this from a pet project of mine and decided to make it a library. Expect bugs and missing features.
@@ -90,11 +90,11 @@ config->LoadCSS = [](const char* url, const char* baseurl) {
 
 ## Installation
 
-Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked.
+Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes available.
 
 ### Linking litehtml with CMake
 
-You can check the example [CMakeLists.txt](CMakeLists.txt) for a usage example.
+You can check the example [CMakeLists.txt](CMakeLists.txt) for a usage in the example.
 
 ```
 # Download and setup litehtml

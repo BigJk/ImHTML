@@ -404,6 +404,7 @@ bool Canvas(const char *id, const char *html, float width, std::string *clickedU
     if (it->first != id && now - it->second.lastActiveTime > 1000000000) {
       IMHTML_PRINTF("[ImHTML] Erased state for id=%s\n", it->first.c_str());
 
+      // We have to destruct in this order, otherwise we get a segfault
       it->second.doc.reset();
       it->second.container.reset();
 
