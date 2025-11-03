@@ -93,7 +93,7 @@ config->LoadCSS = [](const char* url, const char* baseurl) {
 };
 ```
 
-## Installation
+## Using the library
 
 Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes are available.
 
