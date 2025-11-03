@@ -51,9 +51,10 @@ ImHTML::Canvas("my_canvas",
 
 ### Advanced Usage
 
-**Config**
+You can change the config using `ImHTML::GetConfig()`, `ImHTML::SetConfig(config)`, `ImHTML::PushConfig(config)` and `ImHTML::PopConfig()`.
 
-You can provide a config to the `Canvas` function to customize the behavior.
+> [!IMPORTANT]
+> To support images (`<img src="..." />`) and external css (`<link rel="stylesheet" href="..." />`) loading you need to provide the functions in the config!
 
 ```cpp
 ImHTML::Config* config = ImHTML::GetConfig();
@@ -67,7 +68,7 @@ config->FontBold = ImGui::GetIO().Fonts->AddFontDefault();
 config->FontItalic = ImGui::GetIO().Fonts->AddFontDefault();
 config->FontBoldItalic = ImGui::GetIO().Fonts->AddFontDefault();
 
-// Image loading and meta data to support <img src="..." />
+// Image loading and meta data reading to support <img src="..." />
 config->LoadImage = [](const char* src, const char* baseurl) {
     // - src is the text from the <img src="..." />
     // - you can use stb_image or any other image loader
@@ -94,7 +95,7 @@ config->LoadCSS = [](const char* url, const char* baseurl) {
 
 ## Installation
 
-Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes available.
+Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes are available.
 
 ### Linking litehtml with CMake
 
