@@ -51,6 +51,8 @@ ImHTML::Canvas("my_canvas",
 
 ### Advanced Usage
 
+#### Config
+
 You can change the config using `ImHTML::GetConfig()`, `ImHTML::SetConfig(config)`, `ImHTML::PushConfig(config)` and `ImHTML::PopConfig()`.
 
 > [!IMPORTANT]
@@ -91,6 +93,21 @@ config->LoadCSS = [](const char* url, const char* baseurl) {
     // - ImHTML::DefaultFileLoader is a simple file loader that you can use
     return ImHTML::DefaultFileLoader(url, baseurl);
 };
+```
+
+#### Link Clicking
+
+You can get the clicked url by passing a pointer to a string to the `Canvas` function. The function will return `true` if **any** link was clicked.
+
+```cpp
+std::string clickedURL = "";
+if(ImHTML::Canvas(
+    "my_canvas",
+    "<html><body><a href=\"my_url\">Some Link</a></body></html>",
+    0.0f, // 0.0f for using all available width
+    &clickedURL)) {
+    // clickedURL will contain "my_url" if the link was clicked
+}
 ```
 
 ## Using the library
