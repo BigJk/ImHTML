@@ -1,5 +1,7 @@
 # ImHTML
 
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/BigJk/ImHTML)](https://github.com/BigJk/ImHTML/releases)
+
 ImHTML is a simple HTML renderer for ImGui. It is based on the awesome [litehtml](https://github.com/zenozeng/litehtml) library, which is responsible for understanding HTML and CSS. ImHTML implements the needed container to render the content to ImGui.
 
 > [!WARNING]
@@ -112,7 +114,8 @@ if(ImHTML::Canvas(
 
 ## Using the library
 
-Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes are available.
+Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes are available. You can download a zip with the files from the release page:
+- https://github.com/BigJk/ImHTML/releases
 
 ### Linking litehtml with CMake
 
@@ -144,3 +147,7 @@ endif()
 # Link against litehtml
 target_link_libraries(your_target PRIVATE litehtml)
 ```
+
+## Found the project useful? :smiling_face_with_three_hearts:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A763FPT)
