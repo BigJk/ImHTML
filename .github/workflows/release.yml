@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create zip archive
+        run: |
+          mkdir -p imhtml-release
+          cp imhtml.cpp imhtml.hpp imhtml-release/
+          zip -r imhtml-${{ github.ref_name }}.zip imhtml-release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: imhtml-${{ github.ref_name }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
