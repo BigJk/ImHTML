@@ -3,8 +3,12 @@
 #include <functional>
 #include <string>
 
+#include "litehtml.h"
+#include "litehtml/html_tag.h"
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #ifdef IMHTML_DEBUG_PRINTF
 #define IMHTML_PRINTF(fmt, ...) printf(fmt, ##__VA_ARGS__)
@@ -42,6 +46,31 @@ struct Config {
 };
 
 /**
+ * A custom element draw function
+ *
+ * @param bounds The available bounds of the parent element. This is the usable space for the custom element.
+ * @param attributes The attributes of the element
+ */
+typedef std::function<void(ImRect bounds, std::map<std::string, std::string> attributes)> CustomElementDrawFunction;
+
+/**
+ * Custom element
+ */
+class CustomElement : public litehtml::html_tag {
+ private:
+  std::string tag = "";
+  std::map<std::string, std::string> attributes = {};
+
+ public:
+  CustomElement(const std::shared_ptr<litehtml::document> &doc, const std::string &tag,
+                std::map<std::string, std::string> attributes)
+      : litehtml::html_tag(doc), tag(tag), attributes(attributes) {}
+
+  void draw_background(litehtml::uint_ptr hdc, int x, int y, const litehtml::position *clip,
+                       const std::shared_ptr<litehtml::render_item> &ri) override;
+};
+
+/**
  * Default file loader for loading CSS files
  *
  * @param url Expects a relative local path to the CSS file
@@ -75,6 +104,21 @@ void PushConfig(Config config);
  * Pop the configuration
  */
 void PopConfig();
+
+/**
+ * Register a custom element. The draw function will be called with the position and attributes of the element.
+ *
+ * @param tagName The tag name of the custom element (e.g. <custom arg="value"></custom>)
+ * @param draw The draw function
+ */
+void RegisterCustomElement(const char *tagName, CustomElementDrawFunction draw);
+
+/**
+ * Unregister a custom element.
+ *
+ * @param tagName The tag name of the custom element (e.g. <custom arg="value"></custom>)
+ */
+void UnregisterCustomElement(const char *tagName);
 
 /**
  * Render the HTML

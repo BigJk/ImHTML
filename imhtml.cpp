@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "litehtml.h"
+#include "litehtml/types.h"
 
 namespace ImHTML {
 
@@ -33,6 +34,7 @@ Config config = Config{
 };
 
 std::vector<Config> configStack;
+std::unordered_map<std::string, CustomElementDrawFunction> customElements;
 
 Config getCurrentConfig() {
   if (configStack.empty()) {
@@ -58,6 +60,18 @@ ImFont *getFont(FontStyle fontStyle) {
 }
 
 }  // namespace
+
+void CustomElement::draw_background(litehtml::uint_ptr hdc, int x, int y, const litehtml::position *clip,
+                                    const std::shared_ptr<litehtml::render_item> &ri) {
+  litehtml::position placement = this->parent()->get_placement();
+
+  if (customElements.find(this->tag) != customElements.end()) {
+    ImVec2 cursor = ImGui::GetCursorScreenPos();
+    customElements[this->tag](ImRect(cursor + ImVec2(x, y), cursor + ImVec2(x + placement.width, y + placement.height)),
+                              this->attributes);
+    ImGui::SetCursorScreenPos(cursor);
+  }
+}
 
 class BrowserContainer : public litehtml::document_container {
  private:
@@ -313,6 +327,10 @@ class BrowserContainer : public litehtml::document_container {
 
   virtual litehtml::element::ptr create_element(const char *tag_name, const litehtml::string_map &attributes,
                                                 const std::shared_ptr<litehtml::document> &doc) override {
+    if (customElements.find(tag_name) != customElements.end()) {
+      return std::make_shared<CustomElement>(doc, tag_name, attributes);
+    }
+
     return nullptr;
   }
 
@@ -339,6 +357,10 @@ void PopConfig() {
   assert(!configStack.empty());
   configStack.pop_back();
 }
+
+void RegisterCustomElement(const char *tagName, CustomElementDrawFunction draw) { customElements[tagName] = draw; }
+
+void UnregisterCustomElement(const char *tagName) { customElements.erase(tagName); }
 
 bool Canvas(const char *id, const char *html, float width, std::string *clickedURL) {
   struct state {

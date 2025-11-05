@@ -21,6 +21,7 @@ https://github.com/user-attachments/assets/efc9b341-7f4a-4626-96b8-618c568385d0
   - ...
 - Regular, Bold, Italic, BoldItalic font styles if you provide the fonts
 - Clickable links with `:hover` styling support
+- Custom components to insert ImGui widgets into the HTML
 
 ## Usage
 
@@ -112,9 +113,38 @@ if(ImHTML::Canvas(
 }
 ```
 
+#### Custom Components
+
+<p align="center">
+    <img src="./.github/custom_comp.png" alt="Custom Components">
+</p>
+
+You can register custom components using `ImHTML::RegisterCustomElement` and `ImHTML::UnregisterCustomElement`. This makes it possible to insert normal ImGui widgets into the HTML.
+
+```cpp
+ImHTML::RegisterCustomElement("custom-button", [](ImRect bounds, std::map<std::string, std::string> attributes) {
+    // bounds are the available bounds of the parent element in **screen space**
+    // attributes are the attributes of the custom element
+
+    ImGui::SetCursorScreenPos(bounds.Min);
+    ImGui::Button(attributes["text"].c_str(), bounds.GetSize());
+    if (ImGui::IsItemHovered() && attributes.count("tooltip") > 0) {
+        ImGui::SetTooltip("%s", attributes["tooltip"].c_str());
+    }
+});
+```
+
+```html
+<!-- For now you should use a div with sizing for your custom element -->
+<div style="width: 100px; height: 30px;">
+  <custom-button text="Click me" tooltip="Tooltip"></custom-button>
+</div>
+```
+
 ## Using the library
 
 Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and litehtml are linked and includes are available. You can download a zip with the files from the release page:
+
 - https://github.com/BigJk/ImHTML/releases
 
 ### Linking litehtml with CMake
@@ -147,6 +177,11 @@ endif()
 # Link against litehtml
 target_link_libraries(your_target PRIVATE litehtml)
 ```
+
+## TODO
+
+- Better border handling
+- Handle more edge-cases
 
 ## Found the project useful? :smiling_face_with_three_hearts:
 

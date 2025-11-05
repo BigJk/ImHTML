@@ -162,6 +162,26 @@ int main(int, char **) {
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+  ImHTML::RegisterCustomElement("custom-element", [](ImRect bounds, std::map<std::string, std::string> attributes) {
+    ImGui::GetWindowDrawList()->AddRectFilled(bounds.Min, bounds.Max, IM_COL32(255, 0, 0, 100));
+
+    ImGui::SetCursorScreenPos(bounds.Min);
+    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + bounds.GetWidth());
+    ImGui::TextWrapped("Custom Element Here");
+    if (ImGui::IsItemHovered()) {
+      ImGui::SetTooltip("%s", attributes["test"].c_str());
+    }
+    ImGui::PopTextWrapPos();
+  });
+
+  ImHTML::RegisterCustomElement("custom-button", [](ImRect bounds, std::map<std::string, std::string> attributes) {
+    ImGui::SetCursorScreenPos(bounds.Min);
+    ImGui::Button(attributes["text"].c_str(), bounds.GetSize());
+    if (ImGui::IsItemHovered() && attributes.count("tooltip") > 0) {
+      ImGui::SetTooltip("%s", attributes["tooltip"].c_str());
+    }
+  });
+
   // Main loop
 #ifdef __EMSCRIPTEN__
   // For an Emscripten build we are disabling file-system access, so let's not
@@ -209,6 +229,23 @@ int main(int, char **) {
     )");
       ImGui::End();
 
+      ImGui::Begin("Custom Components");
+      ImHTML::Canvas("custom_components",
+                     R"(
+                     <div style="display: flex;">
+                        <div>
+                        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+                        </div>
+                        <div style="border: 1px solid green; width: 100px; height: 100px; padding: 15px; flex-shrink: 0;">
+                            <custom-element test="tooltip whatever"></custom-element>
+                        </div>
+                        <div style="border: 1px solid green; height: 100px; width: 100px; padding: 15px; flex-shrink: 0;">
+                            <custom-button text="Click me" tooltip="Tooltip"></custom-button>
+                        </div>
+                      </div>
+                      )");
+      ImGui::End();
+
       ImGui::Begin("Hello, world!");
 
       std::string clickedURL = "";
@@ -237,6 +274,7 @@ int main(int, char **) {
                           std::to_string(clicks) + R"(</h1>
       <div style="display: flex;">
          <div style="margin-right: 15px;">
+           
             <h2>Text</h2>
             <p style="line-height: 1.2;">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
             <h2>Background Color & Border</h2>
