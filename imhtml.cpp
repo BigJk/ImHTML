@@ -19,6 +19,7 @@ std::string DefaultFileLoader(const char *url, const char *baseurl) {
 
   std::ifstream file(url);
   if (!file.is_open()) {
+    IMHTML_PRINTF("[ImHTML] Failed to open file: %s\n", url);
     return "";
   }
 
@@ -374,6 +375,8 @@ bool Canvas(const char *id, const char *html, float width, std::string *clickedU
 
   if (states.find(id) == states.end()) {
     auto container = std::make_shared<BrowserContainer>(width);
+    container->set_config(getCurrentConfig());
+    container->reset();
     states[id] = state{
         .doc = litehtml::document::createFromString(html, container.get()),
         .container = container,
