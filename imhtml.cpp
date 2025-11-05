@@ -296,7 +296,7 @@ class BrowserContainer : public litehtml::document_container {
     loadUrl = url;
   }
   virtual void set_cursor(const char *cursor) override {
-    if (std::string(cursor) == "pointer") {
+    if (std::string(cursor) == "pointer" && ImGui::IsWindowHovered()) {
       ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
     }
   }
