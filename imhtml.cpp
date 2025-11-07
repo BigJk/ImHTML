@@ -244,6 +244,19 @@ class BrowserContainer : public litehtml::document_container {
 
     auto *draw_list = ImGui::GetWindowDrawList();
 
+    // TODO: better support for corners
+
+    // Check if all sides and colors are equal
+    if (borders.top.width == borders.right.width && borders.top.width == borders.bottom.width &&
+        borders.top.width == borders.left.width && borders.top.color == borders.right.color &&
+        borders.top.color == borders.bottom.color && borders.top.color == borders.left.color) {
+      draw_list->AddRect(
+          top_left,
+          bottom_right,
+          IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha),
+          borders.radius.top_left_x,
+          borders.top.width);
+    } else {
     // Top border
     if (borders.top.width > 0) {
       draw_list->AddLine(
@@ -255,11 +268,12 @@ class BrowserContainer : public litehtml::document_container {
 
     // Right border
     if (borders.right.width > 0) {
-      draw_list->AddLine(
-          top_right,
+        draw_list->AddLine(top_right,
           bottom_right,
-          IM_COL32(
-              borders.right.color.red, borders.right.color.green, borders.right.color.blue, borders.right.color.alpha),
+                           IM_COL32(borders.right.color.red,
+                                    borders.right.color.green,
+                                    borders.right.color.blue,
+                                    borders.right.color.alpha),
           borders.right.width);
     }
 
@@ -279,8 +293,10 @@ class BrowserContainer : public litehtml::document_container {
       draw_list->AddLine(
           bottom_left,
           top_left,
-          IM_COL32(borders.left.color.red, borders.left.color.green, borders.left.color.blue, borders.left.color.alpha),
+            IM_COL32(
+                borders.left.color.red, borders.left.color.green, borders.left.color.blue, borders.left.color.alpha),
           borders.left.width);
+      }
     }
 
     push_bottom_right(ImVec2(draw_pos.x + draw_pos.width, draw_pos.y + draw_pos.height));
