@@ -217,7 +217,8 @@ class BrowserContainer : public litehtml::document_container {
           screen_pos + ImVec2(paint.border_box.x, paint.border_box.y),
           screen_pos +
               ImVec2(paint.border_box.x + paint.border_box.width, paint.border_box.y + paint.border_box.height),
-          IM_COL32(paint.color.red, paint.color.green, paint.color.blue, paint.color.alpha));
+          IM_COL32(paint.color.red, paint.color.green, paint.color.blue, paint.color.alpha),
+          paint.border_radius.top_left_x);  // TODO: support border radius for individual corners
 
       if (!paint.image.empty() && config.GetImageTexture) {
         ImTextureID texture = config.GetImageTexture(paint.image.c_str(), paint.baseurl.c_str());
@@ -225,6 +226,7 @@ class BrowserContainer : public litehtml::document_container {
             texture,
             screen_pos + ImVec2(paint.clip_box.x, paint.clip_box.y),
             screen_pos + ImVec2(paint.clip_box.x + paint.clip_box.width, paint.clip_box.y + paint.clip_box.height));
+        // TODO: support border radius for images
       }
 
       push_bottom_right(
