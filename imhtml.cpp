@@ -185,6 +185,8 @@ class BrowserContainer : public litehtml::document_container {
   //
 
   virtual void draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker) override {
+    // TODO: support list marker styles (marker.marker_type)
+
     ImGui::GetWindowDrawList()->AddCircleFilled(
         ImGui::GetCursorScreenPos() + ImVec2(marker.pos.x + 4, marker.pos.y + 4),
         2,
@@ -257,45 +259,45 @@ class BrowserContainer : public litehtml::document_container {
           borders.radius.top_left_x,
           borders.top.width);
     } else {
-    // Top border
-    if (borders.top.width > 0) {
-      draw_list->AddLine(
-          top_left,
-          top_right,
-          IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha),
-          borders.top.width);
-    }
+      // Top border
+      if (borders.top.width > 0) {
+        draw_list->AddLine(
+            top_left,
+            top_right,
+            IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha),
+            borders.top.width);
+      }
 
-    // Right border
-    if (borders.right.width > 0) {
+      // Right border
+      if (borders.right.width > 0) {
         draw_list->AddLine(top_right,
-          bottom_right,
+                           bottom_right,
                            IM_COL32(borders.right.color.red,
                                     borders.right.color.green,
                                     borders.right.color.blue,
                                     borders.right.color.alpha),
-          borders.right.width);
-    }
+                           borders.right.width);
+      }
 
-    // Bottom border
-    if (borders.bottom.width > 0) {
-      draw_list->AddLine(bottom_right,
-                         bottom_left,
-                         IM_COL32(borders.bottom.color.red,
-                                  borders.bottom.color.green,
-                                  borders.bottom.color.blue,
-                                  borders.bottom.color.alpha),
-                         borders.bottom.width);
-    }
+      // Bottom border
+      if (borders.bottom.width > 0) {
+        draw_list->AddLine(bottom_right,
+                           bottom_left,
+                           IM_COL32(borders.bottom.color.red,
+                                    borders.bottom.color.green,
+                                    borders.bottom.color.blue,
+                                    borders.bottom.color.alpha),
+                           borders.bottom.width);
+      }
 
-    // Left border
-    if (borders.left.width > 0) {
-      draw_list->AddLine(
-          bottom_left,
-          top_left,
+      // Left border
+      if (borders.left.width > 0) {
+        draw_list->AddLine(
+            bottom_left,
+            top_left,
             IM_COL32(
                 borders.left.color.red, borders.left.color.green, borders.left.color.blue, borders.left.color.alpha),
-          borders.left.width);
+            borders.left.width);
       }
     }
 
