@@ -385,8 +385,8 @@ void UnregisterCustomElement(const char *tagName) { customElements.erase(tagName
 
 bool Canvas(const char *id, const char *html, float width, std::string *clickedURL) {
   struct state {
-    std::shared_ptr<litehtml::document> doc;
     std::shared_ptr<BrowserContainer> container;
+    std::shared_ptr<litehtml::document> doc;
     std::string html;
     long long lastActiveTime;
   };
@@ -398,8 +398,8 @@ bool Canvas(const char *id, const char *html, float width, std::string *clickedU
     container->set_config(getCurrentConfig());
     container->reset();
     states[id] = state{
-        .doc = litehtml::document::createFromString(html, container.get()),
         .container = container,
+        .doc = litehtml::document::createFromString(html, container.get()),
         .html = html,
         .lastActiveTime = std::chrono::high_resolution_clock::now().time_since_epoch().count(),
     };
