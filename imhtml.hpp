@@ -6,7 +6,6 @@
 #include "litehtml.h"
 #include "litehtml/html_tag.h"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"
 

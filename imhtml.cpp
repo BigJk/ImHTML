@@ -1,14 +1,18 @@
-#include "imhtml.hpp"
 
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <string>
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "litehtml.h"
 #include "litehtml/types.h"
+
+#include "imhtml.hpp"
+
 
 namespace ImHTML {
 
