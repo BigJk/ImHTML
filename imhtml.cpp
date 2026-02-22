@@ -16,6 +16,24 @@
 
 namespace ImHTML {
 
+/**
+ * Custom element
+ */
+class CustomElement : public litehtml::html_tag {
+ private:
+  std::string tag = "";
+  std::map<std::string, std::string> attributes = {};
+
+ public:
+  CustomElement(const std::shared_ptr<litehtml::document> &doc, const std::string &tag,
+                std::map<std::string, std::string> attributes)
+      : litehtml::html_tag(doc), tag(tag), attributes(attributes) {}
+
+  void draw_background(litehtml::uint_ptr hdc, int x, int y, const litehtml::position *clip,
+                       const std::shared_ptr<litehtml::render_item> &ri) override;
+};
+
+
 std::string DefaultFileLoader(const char *url, const char *baseurl) {
   if (url == nullptr || strlen(url) == 0) {
     return "";
