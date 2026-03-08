@@ -229,6 +229,107 @@ int main(int, char **) {
     )");
       ImGui::End();
 
+
+      ImGui::Begin("Advanced borders & stuff");
+      ImHTML::Canvas("borders_and_stuff",
+                     R"(
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* 1. Root Background test */
+        body {
+            background-color: #1e1e24; /* A dark theme background */
+            color: #ffffff;
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        h2 {
+            border-bottom: 2px solid #555;
+            padding-bottom: 5px;
+            color: #ffd700;
+        }
+
+        /* 2. Wonky Borders test */
+        .miter-box {
+            width: 150px;
+            height: 100px;
+            background-color: #333;
+            /* Uneven colors and widths to force the Quad miter drawing */
+            border-top: 20px solid #ff595e;
+            border-right: 20px solid #ffca3a;
+            border-bottom: 20px solid #8ac926;
+            border-left: 20px solid #1982c4;
+            margin-bottom: 20px;
+        }
+
+        /* 3. Per-corner Border Radius test */
+        .radius-box {
+            width: 250px;
+            height: 100px;
+            background-color: #6a4c93;
+            /* Top-Left: 40px, Top-Right: 0px, Bottom-Right: 20px, Bottom-Left: 60px */
+            border-radius: 40px 0px 20px 60px;
+            padding: 15px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        /* 4. Rounded Image test */
+        .rounded-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 30px; /* Applies to the ImGui AddImage logic */
+            margin-bottom: 20px;
+            background-color: #444; /* Fallback if img loading isn't hooked up */
+        }
+
+        /* 5. List Markers test */
+        ul.disc { list-style-type: disc; }
+        ul.circle { list-style-type: circle; }
+        ul.square { list-style-type: square; }
+        
+        li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>1. Root Background</h2>
+    <p>Notice how the dark #1e1e24 background fills the entire ImGui window space natively, not just the bounding box of the text.</p>
+
+    <h2>2. Individual/Mitered Borders</h2>
+    <p>The corners below should join perfectly at 45-degree angles.</p>
+    <div class="miter-box"></div>
+
+    <h2>3. Per-Corner Border Radius</h2>
+    <p>40px top-left, 0px top-right, 20px bottom-right, 60px bottom-left.</p>
+    <div class="radius-box">
+        Hello World!
+    </div>
+
+    <h2>4. Border Radius on Images</h2>
+    <p>If your ImGui image loader is hooked up, this image will have 30px rounded corners.</p>
+    <!-- Placeholder image, requires config.GetImageTexture to be set up to fetch! -->
+    <img src="./images/example.jpg" class="rounded-image" />
+
+    <h2>5. List Marker Styles</h2>
+    <ul class="disc">
+        <li>Disc bullet (default filled circle)</li>
+    </ul>
+    <ul class="circle">
+        <li>Circle bullet (unfilled outline)</li>
+    </ul>
+    <ul class="square">
+        <li>Square bullet (filled rectangle)</li>
+    </ul>
+
+</body>
+</html>
+    )");
+      ImGui::End();
+
+
       ImGui::Begin("Custom Components");
       ImHTML::Canvas("custom_components",
                      R"(

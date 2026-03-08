@@ -207,13 +207,30 @@ class BrowserContainer : public litehtml::document_container {
   //
 
   virtual void draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker) override {
-    // TODO: support list marker styles (marker.marker_type)
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    ImVec2 center = ImGui::GetCursorScreenPos() + ImVec2(marker.pos.x + marker.pos.width / 2.0f, marker.pos.y + marker.pos.height / 2.0f);
+    float radius = marker.pos.width / 2.0f;
+    ImU32 color = IM_COL32(marker.color.red, marker.color.green, marker.color.blue, marker.color.alpha);
 
-    ImGui::GetWindowDrawList()->AddCircleFilled(
-        ImGui::GetCursorScreenPos() + ImVec2(marker.pos.x + 4, marker.pos.y + 4),
-        2,
-        IM_COL32(marker.color.red, marker.color.green, marker.color.blue, marker.color.alpha));
-    push_bottom_right(ImVec2(marker.pos.x + 8, marker.pos.y + 8));
+    switch (marker.marker_type) {
+      case litehtml::list_style_type_circle:
+        draw_list->AddCircle(center, radius, color, 0, 1.5f);
+        break;
+      case litehtml::list_style_type_disc:
+        draw_list->AddCircleFilled(center, radius, color);
+        break;
+      case litehtml::list_style_type_square: {
+        ImVec2 p_min = ImGui::GetCursorScreenPos() + ImVec2(marker.pos.x, marker.pos.y);
+        ImVec2 p_max = p_min + ImVec2(marker.pos.width, marker.pos.height);
+        draw_list->AddRectFilled(p_min, p_max, color);
+        break;
+      }
+      default:
+        draw_list->AddCircleFilled(center, radius, color);
+        break;
+    }
+
+    push_bottom_right(ImVec2(marker.pos.x + marker.pos.width, marker.pos.y + marker.pos.height));
   }
 
   virtual void load_image(const char *src, const char *baseurl, bool redraw_on_ready) override {
@@ -237,24 +254,62 @@ class BrowserContainer : public litehtml::document_container {
   virtual void draw_background(litehtml::uint_ptr hdc, const std::vector<litehtml::background_paint> &bg) override {
     for (auto &paint : bg) {
       ImVec2 screen_pos = ImGui::GetCursorScreenPos();
-      ImGui::GetWindowDrawList()->AddRectFilled(
-          screen_pos + ImVec2(paint.border_box.x, paint.border_box.y),
-          screen_pos +
-              ImVec2(paint.border_box.x + paint.border_box.width, paint.border_box.y + paint.border_box.height),
-          IM_COL32(paint.color.red, paint.color.green, paint.color.blue, paint.color.alpha),
-          paint.border_radius.top_left_x);  // TODO: support border radius for individual corners
+      
+      litehtml::position bg_box = paint.border_box;
+      litehtml::position clip_box = paint.clip_box;
+      
+      ImVec2 p_min = screen_pos + ImVec2(bg_box.x, bg_box.y);
+      ImVec2 p_max = screen_pos + ImVec2(bg_box.x + bg_box.width, bg_box.y + bg_box.height);
+
+      float tl = paint.border_radius.top_left_x;
+      float tr = paint.border_radius.top_right_x;
+      float br = paint.border_radius.bottom_right_x;
+      float bl = paint.border_radius.bottom_left_x;
+      ImU32 bg_color = IM_COL32(paint.color.red, paint.color.green, paint.color.blue, paint.color.alpha);
+
+      if (paint.color.alpha > 0) {
+        if (tl == tr && tr == br && br == bl) {
+          ImGui::GetWindowDrawList()->AddRectFilled(p_min, p_max, bg_color, tl);
+        } else {
+          auto* draw_list = ImGui::GetWindowDrawList();
+          draw_list->PathClear();
+          if (tl > 0.0f) draw_list->PathArcTo(ImVec2(p_min.x + tl, p_min.y + tl), tl, IM_PI, IM_PI * 1.5f);
+          else draw_list->PathLineTo(ImVec2(p_min.x, p_min.y));
+
+          if (tr > 0.0f) draw_list->PathArcTo(ImVec2(p_max.x - tr, p_min.y + tr), tr, IM_PI * 1.5f, IM_PI * 2.0f);
+          else draw_list->PathLineTo(ImVec2(p_max.x, p_min.y));
+
+          if (br > 0.0f) draw_list->PathArcTo(ImVec2(p_max.x - br, p_max.y - br), br, 0.0f, IM_PI * 0.5f);
+          else draw_list->PathLineTo(ImVec2(p_max.x, p_max.y));
+
+          if (bl > 0.0f) draw_list->PathArcTo(ImVec2(p_min.x + bl, p_max.y - bl), bl, IM_PI * 0.5f, IM_PI);
+          else draw_list->PathLineTo(ImVec2(p_min.x, p_max.y));
+
+          draw_list->PathFillConvex(bg_color);
+        }
+      }
 
       if (!paint.image.empty() && config.GetImageTexture) {
         ImTextureID texture = config.GetImageTexture(paint.image.c_str(), paint.baseurl.c_str());
-        ImGui::GetWindowDrawList()->AddImage(
-            texture,
-            screen_pos + ImVec2(paint.clip_box.x, paint.clip_box.y),
-            screen_pos + ImVec2(paint.clip_box.x + paint.clip_box.width, paint.clip_box.y + paint.clip_box.height));
-        // TODO: support border radius for images
+        ImVec2 img_p_min = screen_pos + ImVec2(clip_box.x, clip_box.y);
+        ImVec2 img_p_max = screen_pos + ImVec2(clip_box.x + clip_box.width, clip_box.y + clip_box.height);
+        
+        float radius = std::max({tl, tr, bl, br});
+        if (radius > 0.0f) {
+          ImGui::GetWindowDrawList()->AddImageRounded(
+              texture,
+              img_p_min, img_p_max,
+              ImVec2(0, 0), ImVec2(1, 1),
+              IM_COL32_WHITE,
+              radius);
+        } else {
+          ImGui::GetWindowDrawList()->AddImage(
+              texture,
+              img_p_min, img_p_max);
+        }
       }
 
-      push_bottom_right(
-          ImVec2(paint.border_box.x + paint.border_box.width, paint.border_box.y + paint.border_box.height));
+      push_bottom_right(ImVec2(bg_box.x + bg_box.width, bg_box.y + bg_box.height));
     }
   }
 
@@ -268,64 +323,91 @@ class BrowserContainer : public litehtml::document_container {
 
     auto *draw_list = ImGui::GetWindowDrawList();
 
-    // TODO: better support for corners
-
     // Check if all sides and colors are equal
     if (borders.top.width == borders.right.width && borders.top.width == borders.bottom.width &&
         borders.top.width == borders.left.width && borders.top.color == borders.right.color &&
         borders.top.color == borders.bottom.color && borders.top.color == borders.left.color) {
-      draw_list->AddRect(
-          top_left,
-          bottom_right,
-          IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha),
-          borders.radius.top_left_x,
-          borders.top.width);
+        
+      float w = borders.top.width;
+      if (w > 0) {
+        // ImGui path strokes are centered. We must offset the path inward by half the width 
+        // to conform to the CSS Box Model (borders grow inwards from the bounding box).
+        float half_w = w * 0.5f;
+        ImVec2 p_min = top_left + ImVec2(half_w, half_w);
+        ImVec2 p_max = bottom_right - ImVec2(half_w, half_w);
+
+        // We also must reduce the border radius by half the width so the outer edge matches CSS.
+        float tl = std::max(0.0f, (float)borders.radius.top_left_x - half_w);
+        float tr = std::max(0.0f, (float)borders.radius.top_right_x - half_w);
+        float br = std::max(0.0f, (float)borders.radius.bottom_right_x - half_w);
+        float bl = std::max(0.0f, (float)borders.radius.bottom_left_x - half_w);
+
+        ImU32 color = IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha);
+
+        if (tl == tr && tr == br && br == bl) {
+          draw_list->AddRect(p_min, p_max, color, tl, 0, w);
+        } else {
+          draw_list->PathClear();
+          if (tl > 0.0f) draw_list->PathArcTo(ImVec2(p_min.x + tl, p_min.y + tl), tl, IM_PI, IM_PI * 1.5f);
+          else draw_list->PathLineTo(ImVec2(p_min.x, p_min.y));
+
+          if (tr > 0.0f) draw_list->PathArcTo(ImVec2(p_max.x - tr, p_min.y + tr), tr, IM_PI * 1.5f, IM_PI * 2.0f);
+          else draw_list->PathLineTo(ImVec2(p_max.x, p_min.y));
+
+          if (br > 0.0f) draw_list->PathArcTo(ImVec2(p_max.x - br, p_max.y - br), br, 0.0f, IM_PI * 0.5f);
+          else draw_list->PathLineTo(ImVec2(p_max.x, p_max.y));
+
+          if (bl > 0.0f) draw_list->PathArcTo(ImVec2(p_min.x + bl, p_max.y - bl), bl, IM_PI * 0.5f, IM_PI);
+          else draw_list->PathLineTo(ImVec2(p_min.x, p_max.y));
+
+          draw_list->PathStroke(color, ImDrawFlags_Closed, w);
+        }
+      }
     } else {
+      // The Non-Uniform Path (Mitered Borders via Quads)
+      auto color32 = [](const litehtml::web_color &c) {
+        return IM_COL32(c.red, c.green, c.blue, c.alpha);
+      };
+
       // Top border
       if (borders.top.width > 0) {
-        draw_list->AddLine(
-            top_left,
-            top_right,
-            IM_COL32(borders.top.color.red, borders.top.color.green, borders.top.color.blue, borders.top.color.alpha),
-            borders.top.width);
-      }
-
-      // Right border
-      if (borders.right.width > 0) {
-        draw_list->AddLine(top_right,
-                           bottom_right,
-                           IM_COL32(borders.right.color.red,
-                                    borders.right.color.green,
-                                    borders.right.color.blue,
-                                    borders.right.color.alpha),
-                           borders.right.width);
+        draw_list->AddQuadFilled(
+            top_left, ImVec2(bottom_right.x, top_left.y),
+            ImVec2(bottom_right.x - borders.right.width, top_left.y + borders.top.width),
+            ImVec2(top_left.x + borders.left.width, top_left.y + borders.top.width),
+            color32(borders.top.color));
       }
 
       // Bottom border
       if (borders.bottom.width > 0) {
-        draw_list->AddLine(bottom_right,
-                           bottom_left,
-                           IM_COL32(borders.bottom.color.red,
-                                    borders.bottom.color.green,
-                                    borders.bottom.color.blue,
-                                    borders.bottom.color.alpha),
-                           borders.bottom.width);
+        draw_list->AddQuadFilled(
+            ImVec2(top_left.x + borders.left.width, bottom_right.y - borders.bottom.width),
+            ImVec2(bottom_right.x - borders.right.width, bottom_right.y - borders.bottom.width),
+            bottom_right, ImVec2(top_left.x, bottom_right.y),
+            color32(borders.bottom.color));
       }
 
       // Left border
       if (borders.left.width > 0) {
-        draw_list->AddLine(
-            bottom_left,
-            top_left,
-            IM_COL32(
-                borders.left.color.red, borders.left.color.green, borders.left.color.blue, borders.left.color.alpha),
-            borders.left.width);
+        draw_list->AddQuadFilled(
+            top_left, ImVec2(top_left.x + borders.left.width, top_left.y + borders.top.width),
+            ImVec2(top_left.x + borders.left.width, bottom_right.y - borders.bottom.width),
+            ImVec2(top_left.x, bottom_right.y),
+            color32(borders.left.color));
+      }
+
+      // Right border
+      if (borders.right.width > 0) {
+        draw_list->AddQuadFilled(
+            ImVec2(bottom_right.x - borders.right.width, top_left.y + borders.top.width),
+            ImVec2(bottom_right.x, top_left.y), bottom_right,
+            ImVec2(bottom_right.x - borders.right.width, bottom_right.y - borders.bottom.width),
+            color32(borders.right.color));
       }
     }
 
     push_bottom_right(ImVec2(draw_pos.x + draw_pos.width, draw_pos.y + draw_pos.height));
   }
-
   //
   // Document related functions
   //
@@ -430,7 +512,7 @@ bool Canvas(const char *id, const char *html, float width, std::string *clickedU
   auto &state = states[id];
 
   if (state.html != html) {
-    state.doc = state.doc->createFromString(html, state.container.get());
+    state.doc = litehtml::document::createFromString(html, state.container.get());
     state.html = html;
   }
 
@@ -439,8 +521,11 @@ bool Canvas(const char *id, const char *html, float width, std::string *clickedU
   state.container->set_config(getCurrentConfig());
   state.container->reset();
 
-  state.doc->render(width > 0 ? width : ImGui::GetContentRegionAvail().x);
-  state.doc->draw(0, 0, 0, nullptr);
+  int render_width = width > 0 ? (int)width : (int)ImGui::GetContentRegionAvail().x;
+  state.doc->render(render_width);
+
+  litehtml::position clip(0, 0, render_width, std::max((int)state.doc->height(), (int)ImGui::GetContentRegionAvail().y));
+  state.doc->draw(0, 0, 0, &clip);
 
   auto x = ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x;
   auto y = ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y;
