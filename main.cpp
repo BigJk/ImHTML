@@ -148,6 +148,17 @@ int main(int, char **) {
     return (ImTextureID)0;
   };
 
+  // Setup fonts
+  ImFontAtlas * fonts = io.Fonts;
+  fonts->AddFontDefault();
+  ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/ClearSans-Regular.ttf", 18.0f);
+  ImFont* monoFont = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
+
+  ImHTML::FontFamily mono = {.Regular = monoFont, .Bold = monoFont, .Italic = monoFont, .BoldItalic = monoFont};
+  config->FontFamilies["monospace"] = mono;
+  ImHTML::FontFamily sans = {.Regular = sansFont, .Bold = sansFont, .Italic = sansFont, .BoldItalic = sansFont};
+  config->FontFamilies["sans-serif"] = sans;
+
   // Setup scaling
   ImGuiStyle &style = ImGui::GetStyle();
   style.ScaleAllSizes(main_scale);
@@ -232,7 +243,7 @@ int main(int, char **) {
     )");
       ImGui::End();
 
-      ImGui::Begin("Advanced borders & stuff");
+      ImGui::Begin("Advanced borders, fonts & stuff");
       ImHTML::Canvas("borders_and_stuff",
                      R"(
 <!DOCTYPE html>
@@ -244,6 +255,7 @@ int main(int, char **) {
             background-color: #1e1e24; /* A dark theme background */
             color: #ffffff;
             font-family: sans-serif;
+            font-size: 18px;
             margin: 20px;
         }
 
@@ -293,6 +305,59 @@ int main(int, char **) {
         ul.square { list-style-type: square; }
         
         li { margin-bottom: 5px; }
+
+        /* 7. Gradient Fill test */
+         .gradient-linear {
+            width: 250px;
+            height: 100px;
+            margin: 10px;
+            background-image: linear-gradient(
+              45deg,
+              hsl(240deg 100% 20%) 0%,
+              hsl(281deg 100% 21%) 0%,
+              hsl(304deg 100% 23%) 2%,
+              hsl(319deg 100% 30%) 7%,
+              hsl(329deg 100% 36%) 18%,
+              hsl(336deg 100% 41%) 41%,
+              hsl(346deg 83% 51%) 68%,
+              hsl(3deg 95% 61%) 83%,
+              hsl(17deg 100% 59%) 92%,
+              hsl(30deg 100% 55%) 97%,
+              hsl(40deg 100% 50%) 99%,
+              hsl(48deg 100% 50%) 100%,
+              hsl(55deg 100% 50%) 100%
+            );
+        }
+
+        .gradient-radial {
+            width: 250px;
+            height: 100px;
+            margin: 10px;
+            background-image: radial-gradient(
+              circle at 30% 30%,
+              hsl(0deg 100% 50%) 0%,
+              hsl(60deg 100% 50%) 25%,
+              hsl(120deg 100% 50%) 50%,
+              hsl(180deg 100% 50%) 75%,
+              hsl(240deg 100% 50%) 100%
+            );
+        }
+
+        .gradient-conic {
+            width: 250px;
+            height: 100px;
+            margin: 10px;
+            border-radius: 20px 0px 20px 0px;
+            background-image: conic-gradient(
+              from 90deg at 50% 50%,
+              hsl(0deg 100% 50%) 0%,
+              hsl(60deg 100% 50%) 20%,
+              hsl(120deg 100% 50%) 40%,
+              hsl(180deg 100% 50%) 60%,
+              hsl(240deg 100% 50%) 80%,
+              hsl(300deg 100% 50%) 100%
+            );
+        }
     </style>
 </head>
 <body>
@@ -326,6 +391,22 @@ int main(int, char **) {
         <li>Square bullet (filled rectangle)</li>
     </ul>
 
+    <h2>6. Font Families</h2>
+    <p>The main font of this canvas should appear as a "sans-serif" font, different from the default ImGui font.</p>
+    <p style="font-family: monospace;">While this paragraph should appear as a "monospace" font.
+    <pre>
+        Line 1: The quick brown fox jumps over the lazy dog.
+        Line 2: 0123456789 {} !@#$%^&*()_+-=
+        Line 3: `~ ImHTML Font Test
+    </pre>
+    </p>
+
+    <h2>7. Gradient Fills</h2>
+    <p>As well as solid colors, ImHTML supports CSS gradients! Below are examples of linear, radial and conic gradients.</p>
+    <div class="gradient-linear"></div>
+    <div class="gradient-radial"></div>
+    <p>And even with rounded corners!</p>
+    <div class="gradient-conic"></div>
 </body>
 </html>
     )");

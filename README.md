@@ -68,10 +68,16 @@ ImHTML::Config* config = ImHTML::GetConfig();
 config->BaseFontSize = 16.0f;
 
 // Set the fonts
-config->FontRegular = ImGui::GetIO().Fonts->AddFontDefault();
-config->FontBold = ImGui::GetIO().Fonts->AddFontDefault();
-config->FontItalic = ImGui::GetIO().Fonts->AddFontDefault();
-config->FontBoldItalic = ImGui::GetIO().Fonts->AddFontDefault();
+config->DefaultFont.Regular = ImGui::GetIO().Fonts->AddFontDefault();
+config->DefaultFont.Bold = ImGui::GetIO().Fonts->AddFontDefault();
+config->DefaultFont.Italic = ImGui::GetIO().Fonts->AddFontDefault();
+config->DefaultFont.BoldItalic = ImGui::GetIO().Fonts->AddFontDefault();
+
+// Optionally, add some font families
+ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/ClearSans-Regular.ttf", 18.0f);
+
+ImHTML::FontFamily sans = {.Regular = sansFont, .Bold = sansFont, .Italic = sansFont, .BoldItalic = sansFont};
+config->FontFamilies["sans-serif"] = sans;
 
 // Image loading and meta data reading to support <img src="..." />
 config->LoadImage = [](const char* src, const char* baseurl) {

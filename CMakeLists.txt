@@ -28,7 +28,7 @@ FetchContent_MakeAvailable(glad)
 FetchContent_Declare(
     imgui
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG        v1.92.4
+    GIT_TAG        v1.92.6
 )
 FetchContent_MakeAvailable(imgui)
 
@@ -46,7 +46,7 @@ set(IMGUI_SRC
 FetchContent_Declare(
   litehtml
   GIT_REPOSITORY https://github.com/litehtml/litehtml.git
-  GIT_TAG d4453f5d4e03cd4d902b867ca553d0ad81b09939
+  GIT_TAG 8836bc1bc35ca0cfd71dc0386ef841d5cbc3bd5e
 )
 set(LITEHTML_BUILD_TESTING OFF CACHE BOOL "Skip building tests" FORCE)
 FetchContent_MakeAvailable(litehtml)
