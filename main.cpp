@@ -151,7 +151,7 @@ int main(int, char **) {
   // Setup fonts
   ImFontAtlas * fonts = io.Fonts;
   fonts->AddFontDefault();
-  ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/ClearSans-Regular.ttf", 18.0f);
+  ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
   ImFont* monoFont = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
 
   ImHTML::FontFamily mono = {.Regular = monoFont, .Bold = monoFont, .Italic = monoFont, .BoldItalic = monoFont};

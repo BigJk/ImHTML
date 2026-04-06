@@ -74,7 +74,7 @@ config->DefaultFont.Italic = ImGui::GetIO().Fonts->AddFontDefault();
 config->DefaultFont.BoldItalic = ImGui::GetIO().Fonts->AddFontDefault();
 
 // Optionally, add some font families
-ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/ClearSans-Regular.ttf", 18.0f);
+ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
 
 ImHTML::FontFamily sans = {.Regular = sansFont, .Bold = sansFont, .Italic = sansFont, .BoldItalic = sansFont};
 config->FontFamilies["sans-serif"] = sans;
@@ -157,12 +157,15 @@ Copy `imhtml.cpp` and `imhtml.hpp` to your project and make sure that imgui and 
 
 You can check the example [CMakeLists.txt](CMakeLists.txt) for a usage in the example.
 
+Note that ImHTML requires the latest version of litehtml (last tested to work with commit 8836bc1bc35ca0cfd71dc0386ef841d5cbc3bd5e), which made some
+significant changes to the API.
+
 ```
 # Download and setup litehtml
 FetchContent_Declare(
   litehtml
   GIT_REPOSITORY https://github.com/litehtml/litehtml.git
-  GIT_TAG d4453f5d4e03cd4d902b867ca553d0ad81b09939 # I had some problems with the latest version, so I used this one
+  GIT_TAG 8836bc1bc35ca0cfd71dc0386ef841d5cbc3bd5e
 )
 set(LITEHTML_BUILD_TESTING OFF CACHE BOOL "Skip building tests" FORCE)
 FetchContent_MakeAvailable(litehtml)
