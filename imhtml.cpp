@@ -10,6 +10,7 @@
 #include "imgui_internal.h"
 #include "imhtml.hpp"
 #include "litehtml.h"
+#include "litehtml/render_item.h"
 #include "litehtml/types.h"
 
 namespace ImHTML {
@@ -28,6 +29,20 @@ class CustomElement : public litehtml::html_tag {
       : litehtml::html_tag(doc), tag(tag), attributes(attributes) {
     // Register the tag name so that css selectors can modify it
     set_tagName(tag.c_str());
+  }
+
+  /**
+   * @brief Force display:block after normal CSS computation.
+   *
+   * Custom elements are replaced/leaf elements that must always occupy a full
+   * line. Overriding compute_styles lets us guarantee block display regardless
+   * of what the master CSS or author stylesheet resolves to.
+   *
+   * @param recursive Whether to recurse into children (passed through to base)
+   */
+  void compute_styles(bool recursive = true) override {
+    litehtml::html_tag::compute_styles(recursive);
+    m_css.set_display(litehtml::display_block);
   }
 
   void draw_background(litehtml::uint_ptr hdc, litehtml::pixel_t x, litehtml::pixel_t y, const litehtml::position* clip,
@@ -105,12 +120,21 @@ static ImFont* resolveFont(const Config& cfg, const std::string& family_name, Fo
 
 void CustomElement::draw_background(litehtml::uint_ptr hdc, litehtml::pixel_t x, litehtml::pixel_t y,
                                     const litehtml::position* clip, const std::shared_ptr<litehtml::render_item>& ri) {
-  litehtml::position placement = this->parent()->get_placement();
+  // Let the base class draw background color/image and borders first.
+  litehtml::html_tag::draw_background(hdc, x, y, clip, ri);
+
+  // ri->pos() is the element's own content box relative to its parent.
+  // x/y carry the accumulated offset from all ancestors.
+  // Together they give the absolute document position and correct size.
+  litehtml::position pos = ri->pos();
+  pos.x += x;
+  pos.y += y;
 
   if (customElements.find(this->tag) != customElements.end()) {
     ImVec2 cursor = ImGui::GetCursorScreenPos();
-    customElements[this->tag](ImRect(cursor + ImVec2(x, y), cursor + ImVec2(x + placement.width, y + placement.height)),
-                              this->attributes);
+    customElements[this->tag](
+        ImRect(cursor + ImVec2(pos.x, pos.y), cursor + ImVec2(pos.x + pos.width, pos.y + pos.height)),
+        this->attributes);
     ImGui::SetCursorScreenPos(cursor);
   }
 }
