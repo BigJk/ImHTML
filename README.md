@@ -129,7 +129,7 @@ You can register custom components using `ImHTML::RegisterCustomElement` and `Im
 
 ```cpp
 ImHTML::RegisterCustomElement("custom-button", [](ImRect bounds, std::map<std::string, std::string> attributes) {
-    // bounds are the available bounds of the parent element in **screen space**
+    // bounds are the available bounds of the element in **screen space**
     // attributes are the attributes of the custom element
 
     ImGui::SetCursorScreenPos(bounds.Min);
