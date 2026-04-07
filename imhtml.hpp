@@ -23,8 +23,8 @@ enum class FontStyle : unsigned char { Regular, Bold, Italic, BoldItalic };
  * Meta data for an image
  */
 struct ImageMeta {
-  int width;
-  int height;
+  int Width;
+  int Height;
 };
 
 /**

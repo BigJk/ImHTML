@@ -74,9 +74,9 @@ config->DefaultFont.Italic = ImGui::GetIO().Fonts->AddFontDefault();
 config->DefaultFont.BoldItalic = ImGui::GetIO().Fonts->AddFontDefault();
 
 // Optionally, add some font families
-ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
+ImFont* sans_font = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
 
-ImHTML::FontFamily sans = {.Regular = sansFont, .Bold = sansFont, .Italic = sansFont, .BoldItalic = sansFont};
+ImHTML::FontFamily sans = {.Regular = sans_font, .Bold = sans_font, .Italic = sans_font, .BoldItalic = sans_font};
 config->FontFamilies["sans-serif"] = sans;
 
 // Image loading and meta data reading to support <img src="..." />
@@ -87,7 +87,7 @@ config->LoadImage = [](const char* src, const char* baseurl) {
 config->GetImageMeta = [](const char* src, const char* baseurl) {
     // - src is the text from the <img src="..." />
     // - fetch the size of the image
-    return ImHTML::ImageMeta{width, height};
+    return ImHTML::ImageMeta{.Width = width, .Height = height};
 };
 config->GetImageTexture = [](const char* src, const char* baseurl) {
     // - src is the text from the <img src="..." />
@@ -109,13 +109,13 @@ config->LoadCSS = [](const char* url, const char* baseurl) {
 You can get the clicked url by passing a pointer to a string to the `Canvas` function. The function will return `true` if **any** link was clicked.
 
 ```cpp
-std::string clickedURL = "";
+std::string clicked_url = "";
 if(ImHTML::Canvas(
     "my_canvas",
     "<html><body><a href=\"my_url\">Some Link</a></body></html>",
     0.0f, // 0.0f for using all available width
-    &clickedURL)) {
-    // clickedURL will contain "my_url" if the link was clicked
+    &clicked_url)) {
+    // clicked_url will contain "my_url" if the link was clicked
 }
 ```
 

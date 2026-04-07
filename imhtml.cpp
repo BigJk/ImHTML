@@ -201,20 +201,20 @@ class BrowserContainer : public litehtml::document_container {
     bool bold = descr.weight > 400;
     bool italic = descr.style == litehtml::font_style_italic;
 
-    FontStyle fontStyle = FontStyle::Regular;
+    FontStyle font_style = FontStyle::Regular;
     if (bold && italic) {
-      fontStyle = FontStyle::BoldItalic;
+      font_style = FontStyle::BoldItalic;
     } else if (bold) {
-      fontStyle = FontStyle::Bold;
+      font_style = FontStyle::Bold;
     } else if (italic) {
-      fontStyle = FontStyle::Italic;
+      font_style = FontStyle::Italic;
     }
 
-    ImFont* font = resolveFont(config, descr.family, fontStyle);
+    ImFont* font = resolveFont(config, descr.family, font_style);
 
     auto rf = std::make_unique<ResolvedFont>();
     rf->Font = font;
-    rf->Style = fontStyle;
+    rf->Style = font_style;
     rf->Family = descr.family;
     rf->Size = descr.size;
 
@@ -347,9 +347,9 @@ class BrowserContainer : public litehtml::document_container {
       return;
     }
 
-    auto imageMeta = config.GetImageMeta(src, baseurl);
-    sz.width = imageMeta.width;
-    sz.height = imageMeta.height;
+    auto image_meta = config.GetImageMeta(src, baseurl);
+    sz.width = image_meta.Width;
+    sz.height = image_meta.Height;
   }
 
   virtual void draw_image(litehtml::uint_ptr hdc, const litehtml::background_layer& layer, const std::string& url,
@@ -401,12 +401,12 @@ class BrowserContainer : public litehtml::document_container {
 
     LayerGeometry lgm = this->get_layer_geometry(layer);
 
-    ImU32 fill_col = IM_COL32(color.red, color.green, color.blue, color.alpha);
+    ImU32 col = IM_COL32(color.red, color.green, color.blue, color.alpha);
 
     draw_list->PushClipRect(lgm.clip_min, lgm.clip_max, true);
 
     if (lgm.tl == lgm.tr && lgm.tr == lgm.br && lgm.br == lgm.bl) {
-      draw_list->AddRectFilled(lgm.border_min, lgm.border_max, fill_col, lgm.tl);
+      draw_list->AddRectFilled(lgm.border_min, lgm.border_max, col, lgm.tl);
     } else {
       draw_list->PathClear();
 
@@ -431,7 +431,7 @@ class BrowserContainer : public litehtml::document_container {
       else
         draw_list->PathLineTo(ImVec2(lgm.border_min.x, lgm.border_max.y));
 
-      draw_list->PathFillConvex(fill_col);
+      draw_list->PathFillConvex(col);
     }
 
     draw_list->PopClipRect();
@@ -1083,7 +1083,7 @@ bool Canvas(const char* id, const char* html, float width, std::string* clickedU
     std::shared_ptr<BrowserContainer> container;
     std::shared_ptr<litehtml::document> doc;
     std::string html;
-    long long lastActiveTime;
+    long long last_active_time;
   };
 
   static std::unordered_map<std::string, state> states = {};
@@ -1096,7 +1096,7 @@ bool Canvas(const char* id, const char* html, float width, std::string* clickedU
         .container = container,
         .doc = litehtml::document::createFromString(html, container.get()),
         .html = html,
-        .lastActiveTime = std::chrono::high_resolution_clock::now().time_since_epoch().count(),
+        .last_active_time = std::chrono::high_resolution_clock::now().time_since_epoch().count(),
     };
   }
 
@@ -1107,7 +1107,7 @@ bool Canvas(const char* id, const char* html, float width, std::string* clickedU
     state.html = html;
   }
 
-  state.lastActiveTime = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  state.last_active_time = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 
   state.container->set_config(getCurrentConfig());
   state.container->reset();
@@ -1145,7 +1145,7 @@ bool Canvas(const char* id, const char* html, float width, std::string* clickedU
   // Cleanup all inactive states with lastActiveTime > 1 seconds
   auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   for (auto it = states.begin(); it != states.end();) {
-    if (it->first != id && now - it->second.lastActiveTime > 1000000000) {
+    if (it->first != id && now - it->second.last_active_time > 1000000000) {
       IMHTML_PRINTF("[ImHTML] Erased state for id=%s\n", it->first.c_str());
 
       // We have to destruct in this order, otherwise we get a segfault

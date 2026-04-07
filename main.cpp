@@ -57,11 +57,11 @@ GLuint LoadTextureFromFile(const char *filename, int *width, int *height) {
   return tex;
 }
 
-static void glfwErrorCallback(int error, const char *description) {
+static void GlfwErrorCallback(int error, const char *description) {
   fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-static std::string loadFile(const char *path) {
+static std::string LoadFile(const char *path) {
   std::ifstream f(path);
   if (!f) {
     fprintf(stderr, "Failed to load file: %s\n", path);
@@ -72,7 +72,7 @@ static std::string loadFile(const char *path) {
   return ss.str();
 }
 
-static std::string replaceAll(std::string str, const std::string &from, const std::string &to) {
+static std::string ReplaceAll(std::string str, const std::string &from, const std::string &to) {
   size_t pos = 0;
   while ((pos = str.find(from, pos)) != std::string::npos) {
     str.replace(pos, from.size(), to);
@@ -83,7 +83,7 @@ static std::string replaceAll(std::string str, const std::string &from, const st
 
 // Main code
 int main(int, char **) {
-  glfwSetErrorCallback(glfwErrorCallback);
+  glfwSetErrorCallback(GlfwErrorCallback);
   if (!glfwInit()) return 1;
 
     // Decide GL+GLSL versions
@@ -139,32 +139,32 @@ int main(int, char **) {
 
   ImHTML::Config *config = ImHTML::GetConfig();
 
-  std::unordered_map<std::string, std::tuple<GLuint, ImHTML::ImageMeta>> imageCache;
+  std::unordered_map<std::string, std::tuple<GLuint, ImHTML::ImageMeta>> image_cache;
 
   config->GetImageMeta = [&](const char *url, const char *baseurl) {
-    if (imageCache.find(url) != imageCache.end()) {
-      return std::get<1>(imageCache[url]);
+    if (image_cache.find(url) != image_cache.end()) {
+      return std::get<1>(image_cache[url]);
     }
 
     int width, height;
     GLuint id = LoadTextureFromFile(url, &width, &height);
-    imageCache[url] = std::make_tuple(id, ImHTML::ImageMeta{width, height});
+    image_cache[url] = std::make_tuple(id, ImHTML::ImageMeta{.Width = width, .Height = height});
     printf("[GetImageMeta] %s width: %d height: %d id: %d\n", url, width, height, id);
-    return std::get<1>(imageCache[url]);
+    return std::get<1>(image_cache[url]);
   };
   config->LoadImage = [&](const char *url, const char *baseurl) {
-    if (imageCache.find(url) != imageCache.end()) {
-      return std::get<0>(imageCache[url]);
+    if (image_cache.find(url) != image_cache.end()) {
+      return std::get<0>(image_cache[url]);
     }
     int width, height;
     GLuint id = LoadTextureFromFile(url, &width, &height);
-    imageCache[url] = std::make_tuple(id, ImHTML::ImageMeta{width, height});
+    image_cache[url] = std::make_tuple(id, ImHTML::ImageMeta{.Width = width, .Height = height});
     printf("[LoadImage] %s width: %d height: %d id: %d\n", url, width, height, id);
     return id;
   };
   config->GetImageTexture = [&](const char *url, const char *baseurl) {
-    if (imageCache.find(url) != imageCache.end()) {
-      GLuint id = std::get<0>(imageCache[url]);
+    if (image_cache.find(url) != image_cache.end()) {
+      GLuint id = std::get<0>(image_cache[url]);
       return (ImTextureID)id;
     }
     return (ImTextureID)0;
@@ -173,12 +173,12 @@ int main(int, char **) {
   // Setup fonts
   ImFontAtlas *fonts = io.Fonts;
   fonts->AddFontDefault();
-  ImFont *sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
-  ImFont *monoFont = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
+  ImFont *sans_font = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
+  ImFont *mono_font = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
 
-  ImHTML::FontFamily mono = {.Regular = monoFont, .Bold = monoFont, .Italic = monoFont, .BoldItalic = monoFont};
+  ImHTML::FontFamily mono = {.Regular = mono_font, .Bold = mono_font, .Italic = mono_font, .BoldItalic = mono_font};
   config->FontFamilies["monospace"] = mono;
-  ImHTML::FontFamily sans = {.Regular = sansFont, .Bold = sansFont, .Italic = sansFont, .BoldItalic = sansFont};
+  ImHTML::FontFamily sans = {.Regular = sans_font, .Bold = sans_font, .Italic = sans_font, .BoldItalic = sans_font};
   config->FontFamilies["sans-serif"] = sans;
 
   // Setup scaling
@@ -201,22 +201,22 @@ int main(int, char **) {
     std::function<void(std::string)> render;
   };
   int clicks = 0;
-  std::string hello_world_tmpl = loadFile("examples/hello_world.html");
+  std::string hello_world_tmpl = LoadFile("examples/hello_world.html");
   std::vector<Example> examples = {
       {"Hello, World!",
        [&clicks, &hello_world_tmpl](std::string id) {
-         std::string html = replaceAll(hello_world_tmpl, "{clicks}", std::to_string(clicks));
-         std::string clickedURL;
-         if (ImHTML::Canvas((id + "_" + std::to_string(clicks)).c_str(), html.c_str(), 0.0f, &clickedURL)) clicks++;
+         std::string html = ReplaceAll(hello_world_tmpl, "{clicks}", std::to_string(clicks));
+         std::string clicked_url;
+         if (ImHTML::Canvas((id + "_" + std::to_string(clicks)).c_str(), html.c_str(), 0.0f, &clicked_url)) clicks++;
        }},
       {"HTML Canvas",
-       [html = loadFile("examples/html_canvas.html")](std::string id) { ImHTML::Canvas(id.c_str(), html.c_str()); }},
+       [html = LoadFile("examples/html_canvas.html")](std::string id) { ImHTML::Canvas(id.c_str(), html.c_str()); }},
       {"Borders, Fonts & Gradients",
-       [html = loadFile("examples/borders_and_stuff.html")](std::string id) {
+       [html = LoadFile("examples/borders_and_stuff.html")](std::string id) {
          ImHTML::Canvas(id.c_str(), html.c_str());
        }},
       {"Custom Components",
-       [html = loadFile("examples/custom_components.html")](std::string id) {
+       [html = LoadFile("examples/custom_components.html")](std::string id) {
          ImHTML::Canvas(id.c_str(), html.c_str());
        }},
   };
