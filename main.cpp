@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include <fstream>
+#include <sstream>
 #include <string>
 
 // ImHTML
@@ -55,13 +57,33 @@ GLuint LoadTextureFromFile(const char *filename, int *width, int *height) {
   return tex;
 }
 
-static void glfw_error_callback(int error, const char *description) {
+static void glfwErrorCallback(int error, const char *description) {
   fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
+static std::string loadFile(const char *path) {
+  std::ifstream f(path);
+  if (!f) {
+    fprintf(stderr, "Failed to load file: %s\n", path);
+    return "";
+  }
+  std::ostringstream ss;
+  ss << f.rdbuf();
+  return ss.str();
+}
+
+static std::string replaceAll(std::string str, const std::string &from, const std::string &to) {
+  size_t pos = 0;
+  while ((pos = str.find(from, pos)) != std::string::npos) {
+    str.replace(pos, from.size(), to);
+    pos += to.size();
+  }
+  return str;
 }
 
 // Main code
 int main(int, char **) {
-  glfwSetErrorCallback(glfw_error_callback);
+  glfwSetErrorCallback(glfwErrorCallback);
   if (!glfwInit()) return 1;
 
     // Decide GL+GLSL versions
@@ -171,10 +193,34 @@ int main(int, char **) {
 #endif
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  // Our state
-  bool show_demo_window = true;
-  bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+  // Load example HTML files
+  struct Example {
+    const char *label;
+    std::function<void(std::string)> render;
+  };
+  int clicks = 0;
+  std::string hello_world_tmpl = loadFile("examples/hello_world.html");
+  std::vector<Example> examples = {
+      {"Hello, World!",
+       [&clicks, &hello_world_tmpl](std::string id) {
+         std::string html = replaceAll(hello_world_tmpl, "{clicks}", std::to_string(clicks));
+         std::string clickedURL;
+         if (ImHTML::Canvas((id + "_" + std::to_string(clicks)).c_str(), html.c_str(), 0.0f, &clickedURL)) clicks++;
+       }},
+      {"HTML Canvas",
+       [html = loadFile("examples/html_canvas.html")](std::string id) { ImHTML::Canvas(id.c_str(), html.c_str()); }},
+      {"Borders, Fonts & Gradients",
+       [html = loadFile("examples/borders_and_stuff.html")](std::string id) {
+         ImHTML::Canvas(id.c_str(), html.c_str());
+       }},
+      {"Custom Components",
+       [html = loadFile("examples/custom_components.html")](std::string id) {
+         ImHTML::Canvas(id.c_str(), html.c_str());
+       }},
+  };
+  int selected = 0;
 
   ImHTML::RegisterCustomElement("custom-element", [](ImRect bounds, std::map<std::string, std::string> attributes) {
     ImGui::GetWindowDrawList()->AddRectFilled(bounds.Min, bounds.Max, IM_COL32(255, 0, 0, 100));
@@ -219,282 +265,32 @@ int main(int, char **) {
     ImGui::NewFrame();
 
     {
-      static int clicks = 0;
+      // Full-screen borderless window
+      ImGuiIO &io = ImGui::GetIO();
+      ImGui::SetNextWindowPos(ImVec2(0, 0));
+      ImGui::SetNextWindowSize(io.DisplaySize);
+      ImGui::Begin("ImHTML Examples",
+                   nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                       ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-      ImGui::Begin("HTML Canvas");
-      ImHTML::Canvas("my_canvas_xyz",
-                     R"(
-    <html>
-        <head>
-        <title>ImHTML Example</title>
-        <style>
-            p, h1, h2, h3, h4, h5, h6 {
-              margin: 0;
-            }
-        </style>
-        </head>
-        <body>
-        <h1>ImHTML Example</h1>
-        <p style="line-height: 1.2;">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-        <div style="border: 1px solid white; background-color: green; padding: 30px;">Box Test</div>
-        <a href="https://github.com/">GitHub</a>
-        </body>
-    </html>
-    )");
-      ImGui::End();
-
-      ImGui::Begin("Advanced borders, fonts & stuff");
-      ImHTML::Canvas("borders_and_stuff",
-                     R"(
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        /* 1. Root Background test */
-        body {
-            background-color: #1e1e24; /* A dark theme background */
-            color: #ffffff;
-            font-family: sans-serif;
-            font-size: 18px;
-            margin: 20px;
-        }
-
-        h2 {
-            border-bottom: 2px solid #555;
-            padding-bottom: 5px;
-            color: #ffd700;
-        }
-
-        /* 2. Wonky Borders test */
-        .miter-box {
-            width: 150px;
-            height: 100px;
-            background-color: #333;
-            /* Uneven colors and widths to force the Quad miter drawing */
-            border-top: 20px solid #ff595e;
-            border-right: 20px solid #ffca3a;
-            border-bottom: 20px solid #8ac926;
-            border-left: 20px solid #1982c4;
-            margin-bottom: 20px;
-        }
-
-        /* 3. Per-corner Border Radius test */
-        .radius-box {
-            width: 250px;
-            height: 100px;
-            background-color: #6a4c93;
-            /* Top-Left: 40px, Top-Right: 0px, Bottom-Right: 20px, Bottom-Left: 60px */
-            border-radius: 40px 0px 20px 60px;
-            padding: 15px;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-        }
-
-        /* 4. Rounded Image test */
-        .rounded-image {
-            width: 120px;
-            height: 120px;
-            border-radius: 30px; /* Applies to the ImGui AddImage logic */
-            margin-bottom: 20px;
-            background-color: #444; /* Fallback if img loading isn't hooked up */
-        }
-
-        /* 5. List Markers test */
-        ul.disc { list-style-type: disc; }
-        ul.circle { list-style-type: circle; }
-        ul.square { list-style-type: square; }
-
-        li { margin-bottom: 5px; }
-
-        /* 7. Gradient Fill test */
-         .gradient-linear {
-            width: 250px;
-            height: 100px;
-            margin: 10px;
-            background-image: linear-gradient(
-              45deg,
-              hsl(240deg 100% 20%) 0%,
-              hsl(281deg 100% 21%) 0%,
-              hsl(304deg 100% 23%) 2%,
-              hsl(319deg 100% 30%) 7%,
-              hsl(329deg 100% 36%) 18%,
-              hsl(336deg 100% 41%) 41%,
-              hsl(346deg 83% 51%) 68%,
-              hsl(3deg 95% 61%) 83%,
-              hsl(17deg 100% 59%) 92%,
-              hsl(30deg 100% 55%) 97%,
-              hsl(40deg 100% 50%) 99%,
-              hsl(48deg 100% 50%) 100%,
-              hsl(55deg 100% 50%) 100%
-            );
-        }
-
-        .gradient-radial {
-            width: 250px;
-            height: 100px;
-            margin: 10px;
-            background-image: radial-gradient(
-              circle at 30% 30%,
-              hsl(0deg 100% 50%) 0%,
-              hsl(60deg 100% 50%) 25%,
-              hsl(120deg 100% 50%) 50%,
-              hsl(180deg 100% 50%) 75%,
-              hsl(240deg 100% 50%) 100%
-            );
-        }
-
-        .gradient-conic {
-            width: 250px;
-            height: 100px;
-            margin: 10px;
-            border-radius: 20px 0px 20px 0px;
-            background-image: conic-gradient(
-              from 90deg at 50% 50%,
-              hsl(0deg 100% 50%) 0%,
-              hsl(60deg 100% 50%) 20%,
-              hsl(120deg 100% 50%) 40%,
-              hsl(180deg 100% 50%) 60%,
-              hsl(240deg 100% 50%) 80%,
-              hsl(300deg 100% 50%) 100%
-            );
-        }
-    </style>
-</head>
-<body>
-
-    <h2>1. Root Background</h2>
-    <p>Notice how the dark #1e1e24 background fills the entire ImGui window space natively, not just the bounding box of the text.</p>
-
-    <h2>2. Individual/Mitered Borders</h2>
-    <p>The corners below should join perfectly at 45-degree angles.</p>
-    <div class="miter-box"></div>
-
-    <h2>3. Per-Corner Border Radius</h2>
-    <p>40px top-left, 0px top-right, 20px bottom-right, 60px bottom-left.</p>
-    <div class="radius-box">
-        Hello World!
-    </div>
-
-    <h2>4. Border Radius on Images</h2>
-    <p>If your ImGui image loader is hooked up, this image will have 30px rounded corners.</p>
-    <!-- Placeholder image, requires config.GetImageTexture to be set up to fetch! -->
-    <img src="./images/example.jpg" class="rounded-image" />
-
-    <h2>5. List Marker Styles</h2>
-    <ul class="disc">
-        <li>Disc bullet (default filled circle)</li>
-    </ul>
-    <ul class="circle">
-        <li>Circle bullet (unfilled outline)</li>
-    </ul>
-    <ul class="square">
-        <li>Square bullet (filled rectangle)</li>
-    </ul>
-
-    <h2>6. Font Families</h2>
-    <p>The main font of this canvas should appear as a "sans-serif" font, different from the default ImGui font.</p>
-    <p style="font-family: monospace;">While this paragraph should appear as a "monospace" font.
-    <pre>
-        Line 1: The quick brown fox jumps over the lazy dog.
-        Line 2: 0123456789 {} !@#$%^&*()_+-=
-        Line 3: `~ ImHTML Font Test
-    </pre>
-    </p>
-
-    <h2>7. Gradient Fills</h2>
-    <p>As well as solid colors, ImHTML supports CSS gradients! Below are examples of linear, radial and conic gradients.</p>
-    <div class="gradient-linear"></div>
-    <div class="gradient-radial"></div>
-    <p>And even with rounded corners!</p>
-    <div class="gradient-conic"></div>
-</body>
-</html>
-    )");
-      ImGui::End();
-
-      ImGui::Begin("Custom Components");
-      ImHTML::Canvas("custom_components",
-                     R"(
-                     <div style="display: flex;">
-                        <div>
-                        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-                        </div>
-                        <div style="border: 1px solid green; width: 100px; height: 100px; padding: 15px; flex-shrink: 0;">
-                            <custom-element test="tooltip whatever"></custom-element>
-                        </div>
-                        <div style="border: 1px solid green; height: 100px; width: 100px; padding: 15px; flex-shrink: 0;">
-                            <custom-button text="Click me" tooltip="Tooltip"></custom-button>
-                        </div>
-                      </div>
-                      )");
-      ImGui::End();
-
-      ImGui::Begin("Hello, world!");
-
-      std::string clickedURL = "";
-      if (ImHTML::Canvas(("my_canvas_" + std::to_string(clicks)).c_str(),
-                         (R"(
-<html>
-   <head>
-      <title>ImHTML Example</title>
-      <style>
-         p {
-         margin: 0;
-         }
-         h1, h2, h3, h4, h5, h6 {
-         margin-top: 15px;
-         margin-bottom: 5px;
-         padding-bottom: 5px;
-         border-bottom: 1px solid #ccc;
-         }
-         a:hover {
-         color: red;
-         }
-      </style>
-   </head>
-   <body>
-      <h1>ImHTML Example)" +
-                          std::to_string(clicks) + R"(</h1>
-      <div style="display: flex;">
-         <div style="margin-right: 15px;">
-
-            <h2>Text</h2>
-            <p style="line-height: 1.2;">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
-            <h2>Background Color & Border</h2>
-            <div style="border: 3px solid red; background-color: green; padding: 30px;">Box Test</div>
-            <h2>Links</h2>
-            <a href="https://github.com/">GitHub</a>
-            <h2>Flexbox</h2>
-            <div style="display: flex; flex-direction: row;">
-               <div style="flex: 1; background-color: red; padding: 10px;">1</div>
-               <div style="flex: 1; background-color: green; padding: 10px;">2</div>
-               <div style="flex: 1; background-color: blue; padding: 10px;">3</div>
-            </div>
-         </div>
-         <div>
-            <h2>Image</h2>
-            <img src="./images/example.jpg" style="width: 100%" />
-            <h2>Lists</h2>
-            <ul>
-               <li>Item 1</li>
-               <li>Item 2</li>
-               <li>Item 3</li>
-               <ul>
-                  <li>Subitem 1</li>
-                  <li>Subitem 2</li>
-                  <li>Subitem 3</li>
-               </ul>
-            </ul>
-         </div>
-      </div>
-   </body>
-</html>
-      )")
-                             .c_str(),
-                         0.0f,
-                         &clickedURL)) {
-        clicks++;
+      // Left panel: example selector
+      const float sidebar_width = 220.0f * main_scale;
+      ImGui::BeginChild("##sidebar", ImVec2(sidebar_width, 0), ImGuiChildFlags_Borders);
+      ImGui::SeparatorText("Examples");
+      for (int i = 0; i < (int)examples.size(); i++) {
+        if (ImGui::Selectable(examples[i].label, selected == i)) selected = i;
       }
+      ImGui::EndChild();
+
+      ImGui::SameLine();
+
+      // Right panel: HTML canvas
+      ImGui::BeginChild("##canvas", ImVec2(0, 0), ImGuiChildFlags_None);
+
+      examples[selected].render(examples[selected].label);
+
+      ImGui::EndChild();
 
       ImGui::End();
     }
