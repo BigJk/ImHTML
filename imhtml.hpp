@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <string>
 #include <map>
+#include <string>
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -31,10 +31,10 @@ struct ImageMeta {
  * A font family, containing different styles of the same font.
  */
 struct FontFamily {
-  ImFont* Regular = nullptr;
-  ImFont* Bold = nullptr;
-  ImFont* Italic = nullptr;
-  ImFont* BoldItalic = nullptr;
+  ImFont *Regular = nullptr;
+  ImFont *Bold = nullptr;
+  ImFont *Italic = nullptr;
+  ImFont *BoldItalic = nullptr;
 };
 
 /**
@@ -84,14 +84,14 @@ Config *GetConfig();
  *
  * @param config The new configuration
  */
-void SetConfig(const Config& config);
+void SetConfig(const Config &config);
 
 /**
  * Push the configuration
  *
  * @param config The new configuration
  */
-void PushConfig(const Config& config);
+void PushConfig(const Config &config);
 
 /**
  * Pop the configuration

@@ -149,10 +149,10 @@ int main(int, char **) {
   };
 
   // Setup fonts
-  ImFontAtlas * fonts = io.Fonts;
+  ImFontAtlas *fonts = io.Fonts;
   fonts->AddFontDefault();
-  ImFont* sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
-  ImFont* monoFont = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
+  ImFont *sansFont = fonts->AddFontFromFileTTF("fonts/NotoSans-Regular.ttf", 18.0f);
+  ImFont *monoFont = fonts->AddFontFromFileTTF("fonts/JetBrainsMono-Regular.ttf", 18.0f);
 
   ImHTML::FontFamily mono = {.Regular = monoFont, .Bold = monoFont, .Italic = monoFont, .BoldItalic = monoFont};
   config->FontFamilies["monospace"] = mono;
@@ -303,7 +303,7 @@ int main(int, char **) {
         ul.disc { list-style-type: disc; }
         ul.circle { list-style-type: circle; }
         ul.square { list-style-type: square; }
-        
+
         li { margin-bottom: 5px; }
 
         /* 7. Gradient Fill test */
@@ -457,7 +457,7 @@ int main(int, char **) {
                           std::to_string(clicks) + R"(</h1>
       <div style="display: flex;">
          <div style="margin-right: 15px;">
-           
+
             <h2>Text</h2>
             <p style="line-height: 1.2;">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</p>
             <h2>Background Color & Border</h2>
