@@ -141,10 +141,7 @@ ImHTML::RegisterCustomElement("custom-button", [](ImRect bounds, std::map<std::s
 ```
 
 ```html
-<!-- For now you should use a div with sizing for your custom element -->
-<div style="width: 100px; height: 30px;">
-  <custom-button text="Click me" tooltip="Tooltip"></custom-button>
-</div>
+<custom-button style="width: 100px; height: 30px;" text="Click me" tooltip="Tooltip"></custom-button>
 ```
 
 ## Using the library
@@ -191,7 +188,7 @@ target_link_libraries(your_target PRIVATE litehtml)
 
 - [StdUI](https://github.com/BigJk/StdUI): Experimental language-agnostic lightweight UI engine written in C++
 
-*Are you using ImHTML? Open a PR and add yourself here!* 🚀
+_Are you using ImHTML? Open a PR and add yourself here!_ 🚀
 
 ## Found the project useful? :smiling_face_with_three_hearts:
 
