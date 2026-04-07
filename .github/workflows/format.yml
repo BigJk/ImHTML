@@ -10,4 +10,5 @@ jobs:
         uses: jidicula/clang-format-action@v4.18.0
         with:
           clang-format-version: "14"
-          include-regex: (main\.cpp|imhtml\.cpp|imhtml\.hpp)$
+          check-path: "."
+          include-regex: '^\./(main\.cpp|imhtml\.cpp|imhtml\.hpp)$'
