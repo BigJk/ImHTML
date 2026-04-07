@@ -194,6 +194,7 @@ class BrowserContainer : public litehtml::document_container {
     const float base_size = font ? font->GetFontBaked(descr.size)->Size : ImGui::GetFontSize();
     const float scale = base_size > 0.0f ? (descr.size / base_size) : 1.0f;
 
+    rf->Metrics.font_size = (int)descr.size;
     rf->Metrics.height = (int)(base_size * scale);
     rf->Metrics.ascent = font ? (int)(font->GetFontBaked(descr.size)->Ascent * scale) : (int)(base_size * 0.8f);
     rf->Metrics.descent = font ? (int)(-font->GetFontBaked(descr.size)->Descent * scale) : (int)(base_size * 0.2f);
